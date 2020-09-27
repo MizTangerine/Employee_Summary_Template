@@ -9,10 +9,60 @@ const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
-
+const { type } = require("os");
+const { right } = require("inquirer/lib/utils/readline");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+const teamList = [];
+console.log('testing');
+
+// ***Manager Questions
+const managerQuestions = [
+    {
+        type: 'input',
+        message: 'Name:',
+        name: 'name',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("Name is required.");
+            }
+            return true;
+        }
+    },
+    {
+        type: 'confirm',
+        message: 'More Empolyees?',
+        name: 'more',
+
+    },
+]
+
+function init() {
+    askManagerQuestions()
+
+}
+
+function askManagerQuestions() {
+    inquirer.prompt(managerQuestions).then(managerInfo => {
+        let teamManager = new Manager(managerInfo.name, '72', 'cl@ri.ssa', '42');
+        teamList.push(teamManager);
+        if (managerInfo.more) { askManagerQuestions() }
+        // ... ask more questions
+        else { html() }
+        // console.log(render(teamList));
+        // html();
+    })
+}
+
+function html() {
+    fs.writeFile(outputPath, render(teamList), function (err) {
+        if (err)
+            console.error(err);
+    })
+}
+
+init()
 
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
