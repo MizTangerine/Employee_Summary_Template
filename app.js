@@ -1,16 +1,16 @@
-const Manager = require("./lib/Manager");
-const Engineer = require("./lib/Engineer");
-const Intern = require("./lib/Intern");
-const inquirer = require("inquirer");
-const path = require("path");
-const fs = require("fs");
+const Manager = require('./lib/Manager');
+const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern');
+const inquirer = require('inquirer');
+const path = require('path');
+const fs = require('fs');
 
-const OUTPUT_DIR = path.resolve(__dirname, "output");
-const outputPath = path.join(OUTPUT_DIR, "team.html");
+const OUTPUT_DIR = path.resolve(__dirname, 'output');
+const outputPath = path.join(OUTPUT_DIR, 'team.html');
 
-const render = require("./lib/htmlRenderer");
-const { type } = require("os");
-const { right } = require("inquirer/lib/utils/readline");
+const render = require('./lib/htmlRenderer');
+const { type } = require('os');
+const { right } = require('inquirer/lib/utils/readline');
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
@@ -18,14 +18,55 @@ const teamList = [];
 console.log('testing');
 
 // ***Manager Questions
-const managerQuestions = [
+const ManagerQs = [
     {
         type: 'input',
         message: 'Name:',
         name: 'name',
-        validate: function (answer) {
-            if (answer.length < 1) {
-                return console.log("Name is required.");
+        default: 'manager name',
+        validate: async (name) => {
+            if (name == '') {
+                return 'Please enter a name.';
+            }
+            return true;
+        }
+    },
+    {
+        type: 'input',
+        message: 'Id:',
+        name: 'id',
+        default: 1,
+        validate: async (id) => {
+            valid = /^\d*$/.test(id);
+            if (valid) {
+                return true;
+            } else {
+                return 'A number is required for an id.';
+            }
+        }
+    },
+    {
+        type: 'input',
+        message: 'Email address:',
+        name: 'email',
+        default: 'manager@email.com',
+        validate: async (email) => {
+            valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            if (valid) {
+                return true;
+            } else {
+                return 'Please enter a valid email';
+            }
+        }
+    },
+    {
+        type: 'input',
+        message: 'Office Number:',
+        name: 'office',
+        default: '1100a',
+        validate: async (office) => {
+            if (office == '') {
+                return 'Please enter an Office Number.';
             }
             return true;
         }
@@ -34,33 +75,103 @@ const managerQuestions = [
         type: 'confirm',
         message: 'More Empolyees?',
         name: 'more',
+    },
+]
+
+// ***Employee Questions
+const employeeQs = [
+    {
+        type: 'input',
+        name: 'name',
+        message: 'Enter employee name:',
+        default: 'employee name',
+        validate: async (name) => {
+            if (name == '') {
+                return 'Please enter a name.';
+            }
+            return true;
+        }
+    },
+    {
+        type: 'input',
+        name: 'email',
+        message: 'Enter employee email:',
+        default: 'employee@email.com',
+        validate: async (email) => {
+            valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            if (valid) {
+                return true;
+            } else {
+                return 'Please enter a valid email';
+            }
+        }
+    },
+    {
+        type: 'list',
+        name: 'role',
+        message: 'What is their role?',
+        choices: ['Engineer', 'Intern']
+    },
+    {
+        when: input => {
+            return input.role == 'Engineer'
+        },
+        type: 'input',
+        name: 'github',
+        message: 'Enter their github username:',
+        default: 'gitHubUser',
+        validate: async (github) => {
+            if (github == '' || /\s/.test(github)) {
+                return 'Please enter a valid GitHub username';
+            }
+            return true;
+        }
+    },
+    {
+        when: input => {
+            return input.role == 'Intern'
+        },
+        type: 'input',
+        name: 'school',
+        message: 'Enter their school name:',
+        default: zoobie,
+        validate: async (school) => {
+            if (school == '') {
+                return 'Please enter a name.';
+            }
+            return true;
+        }
+    },
+    {
+        type: 'confirm',
+        name: 'more',
+        message: 'More Empolyees?',
 
     },
 ]
 
 function init() {
-    askManagerQuestions()
+    askManagerQs()
 
 }
 
-function askManagerQuestions() {
-    inquirer.prompt(managerQuestions).then(managerInfo => {
-        let teamManager = new Manager(managerInfo.name, '72', 'cl@ri.ssa', '42');
+function askManagerQs() {
+    inquirer.prompt(ManagerQs).then(managerInfo => {
+        let teamManager =
+            new Manager(managerInfo.name,
+                managerInfo.id,
+                managerInfo.email,
+                managerInfo.office);
         teamList.push(teamManager);
-        if (managerInfo.more) { askManagerQuestions() }
+        if (managerInfo.more) { askEmpQs() }
         // ... ask more questions
         else { html() }
         // console.log(render(teamList));
+        console.log(teamList);
         // html();
     })
 }
 
-function html() {
-    fs.writeFile(outputPath, render(teamList), function (err) {
-        if (err)
-            console.error(err);
-    })
-}
 
 init()
 
@@ -73,6 +184,14 @@ init()
 // `output` folder. You can use the variable `outputPath` above target this location.
 // Hint: you may need to check if the `output` folder exists and create it if it
 // does not.
+function html() {
+    fs.writeFile(outputPath, render(teamList), err => {
+        if (err) {
+            return console.error(err);
+        }
+        console.log('Congrats, your HTML has been rendered')
+    })
+}
 
 // HINT: each employee type (manager, engineer, or intern) has slightly different
 // information; write your code to ask different questions via inquirer depending on
