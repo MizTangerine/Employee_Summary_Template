@@ -9,8 +9,6 @@ const OUTPUT_DIR = path.resolve(__dirname, 'output');
 const outputPath = path.join(OUTPUT_DIR, 'team.html');
 
 const render = require('./lib/htmlRenderer');
-const { type } = require('os');
-const { right } = require('inquirer/lib/utils/readline');
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
@@ -94,6 +92,20 @@ const employeeQs = [
     },
     {
         type: 'input',
+        message: 'Id:',
+        name: 'id',
+        default: 1,
+        validate: async (id) => {
+            valid = /^\d*$/.test(id);
+            if (valid) {
+                return true;
+            } else {
+                return 'A number is required for an id.';
+            }
+        }
+    },
+    {
+        type: 'input',
         name: 'email',
         message: 'Enter employee email:',
         default: 'employee@email.com',
@@ -134,10 +146,10 @@ const employeeQs = [
         type: 'input',
         name: 'school',
         message: 'Enter their school name:',
-        default: zoobie,
+        default: 'zoobie',
         validate: async (school) => {
             if (school == '') {
-                return 'Please enter a name.';
+                return 'Please enter a school.';
             }
             return true;
         }
@@ -146,7 +158,6 @@ const employeeQs = [
         type: 'confirm',
         name: 'more',
         message: 'More Empolyees?',
-
     },
 ]
 
@@ -163,15 +174,30 @@ function askManagerQs() {
                 managerInfo.email,
                 managerInfo.office);
         teamList.push(teamManager);
-        if (managerInfo.more) { askEmpQs() }
+        if (managerInfo.more) { buildTeam() }
         // ... ask more questions
         else { html() }
         // console.log(render(teamList));
-        console.log(teamList);
+        // console.log(teamList);
         // html();
     })
 }
 
+function buildTeam() {
+    inquirer.prompt(employeeQs).then(employeeInfo => {
+        if (employeeInfo.role == 'Engineer') {
+            var newMember = new Engineer(employeeInfo.name, employeeInfo.id, employeeInfo.email, employeeInfo.github);
+        } else {
+            var newMember = new Intern(employeeInfo.name, employeeInfo.id, employeeInfo.email, employeeInfo.school);
+        }
+        teamList.push(newMember);
+        if (employeeInfo.more) {
+            buildTeam();
+        } else {
+            html();
+        }
+    })
+}
 
 init()
 
