@@ -1,6 +1,6 @@
 # Employee Summary Template
 
-![languages](https://img.shields.io/github/languages/count/clarissareeve/Employee_Summary_Template) ![top_language](https://img.shields.io/github/languages/top/clarissareeve/Employee_Summary_Template) ![License: MIT License](https://img.shields.io/badge/License-MIT%20License-blue.svg)
+![languages](https://img.shields.io/github/languages/count/clarissareeve/Employee_Summary_Template) ![top_language](https://img.shields.io/github/languages/top/clarissareeve/Employee_Summary_Template) ![validation](https://img.shields.io/w3c-validation/default?targetUrl=https%3A%2F%2Fclarissareeve.github.io%2FEmployee_Summary_Template%2Foutput%2Fteam.html) ![License: MIT License](https://img.shields.io/badge/License-MIT%20License-blue.svg)
 
 ## Description
 
