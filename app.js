@@ -10,10 +10,10 @@ const outputPath = path.join(OUTPUT_DIR, 'team.html');
 
 const render = require('./lib/htmlRenderer');
 
-// Write code to use inquirer to gather information about the development team members,
-// and to create objects for each team member (using the correct classes as blueprints!)
 const teamList = [];
-console.log('testing');
+
+// variable for auto generating employee id
+let currentId = 1;
 
 // ***Manager Questions
 const ManagerQs = [
@@ -92,9 +92,9 @@ const employeeQs = [
     },
     {
         type: 'input',
-        message: 'Id:',
+        message: 'Id (if nothing is it will be automatically generated):',
         name: 'id',
-        default: 1,
+        // default: currentId,
         validate: async (id) => {
             valid = /^\d*$/.test(id);
             if (valid) {
@@ -126,7 +126,7 @@ const employeeQs = [
     },
     {
         when: input => {
-            return input.role == 'Engineer'
+            return input.role == 'Engineer';
         },
         type: 'input',
         name: 'github',
@@ -141,12 +141,12 @@ const employeeQs = [
     },
     {
         when: input => {
-            return input.role == 'Intern'
+            return input.role == 'Intern';
         },
         type: 'input',
         name: 'school',
         message: 'Enter their school name:',
-        default: 'zoobie',
+        default: 'dumb zoobie',
         validate: async (school) => {
             if (school == '') {
                 return 'Please enter a school.';
@@ -158,59 +158,59 @@ const employeeQs = [
         type: 'confirm',
         name: 'more',
         message: 'More Empolyees?',
+        default: false,
     },
 ]
 
-function init() {
-    askManagerQs()
-
-}
+//  *** Initiates the app
+init()
 
 function askManagerQs() {
     inquirer.prompt(ManagerQs).then(managerInfo => {
+        // *** adds manager info to teamList
         let teamManager =
             new Manager(managerInfo.name,
                 managerInfo.id,
                 managerInfo.email,
                 managerInfo.office);
         teamList.push(teamManager);
+        currentId++
+        // *** if answer yes to add more employees else build html
         if (managerInfo.more) { buildTeam() }
-        // ... ask more questions
-        else { html() }
+        else { buildHtml() }
         // console.log(render(teamList));
         // console.log(teamList);
-        // html();
     })
+        .catch(err => {
+            console.error(err);
+        })
 }
 
 function buildTeam() {
     inquirer.prompt(employeeQs).then(employeeInfo => {
-        if (employeeInfo.role == 'Engineer') {
-            var newMember = new Engineer(employeeInfo.name, employeeInfo.id, employeeInfo.email, employeeInfo.github);
+        if (employeeInfo.role === 'Engineer') {
+            var newMember = new Engineer(employeeInfo.name, employeeInfo.id || currentId, employeeInfo.email, employeeInfo.github);
         } else {
-            var newMember = new Intern(employeeInfo.name, employeeInfo.id, employeeInfo.email, employeeInfo.school);
+            var newMember = new Intern(employeeInfo.name, employeeInfo.id || currentId, employeeInfo.email, employeeInfo.school);
         }
         teamList.push(newMember);
+        currentId++;
         if (employeeInfo.more) {
             buildTeam();
         } else {
-            html();
+            buildHtml();
         }
     })
+        .catch(err => {
+            console.error(err);
+        })
 }
 
-init()
+function init() {
+    askManagerQs()
+}
 
-// After the user has input all employees desired, call the `render` function (required
-// above) and pass in an array containing all employee objects; the `render` function will
-// generate and return a block of HTML including templated divs for each employee!
-
-// After you have your html, you're now ready to create an HTML file using the HTML
-// returned from the `render` function. Now write it to a file named `team.html` in the
-// `output` folder. You can use the variable `outputPath` above target this location.
-// Hint: you may need to check if the `output` folder exists and create it if it
-// does not.
-function html() {
+function buildHtml() {
     fs.writeFile(outputPath, render(teamList), err => {
         if (err) {
             return console.error(err);
@@ -218,13 +218,3 @@ function html() {
         console.log('Congrats, your HTML has been rendered')
     })
 }
-
-// HINT: each employee type (manager, engineer, or intern) has slightly different
-// information; write your code to ask different questions via inquirer depending on
-// employee type.
-
-// HINT: make sure to build out your classes first! Remember that your Manager, Engineer,
-// and Intern classes should all extend from a class named Employee; see the directions
-// for further information. Be sure to test out each class and verify it generates an
-// object with the correct structure and methods. This structure will be crucial in order
-// for the provided `render` function to work! ```
